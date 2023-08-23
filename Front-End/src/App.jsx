@@ -14,7 +14,7 @@ function App() {
                   height: "100vh",
                   backgroundColor: "#eeeeee",
                   margin:-8}}>
-        {/* <RecoilRoot> */}
+        <RecoilRoot>
           <Router>
           <Appbar></Appbar>
             <Routes>
@@ -26,7 +26,7 @@ function App() {
               
             </Routes>
           </Router>
-        {/* </RecoilRoot> */}
+        </RecoilRoot>
       </div>
       
   )

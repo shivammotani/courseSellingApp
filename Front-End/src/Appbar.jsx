@@ -2,26 +2,26 @@ import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useEffect,useState } from 'react';
+import axios from "axios";
 
 function Appbar(){
         const navigate = useNavigate();
         const [userEmail, setUserEmail] = useState(null);
 
         useEffect(() => {
-                fetch("http://localhost:3000/admin/me",{
-                                                method: "GET",
-                                                headers:{
-                                                        "Content-type": "application/json",
-                                                        "Authorization": "Bearer " + localStorage.getItem("token")
-                                                }}).then((res) => {
-                                                        return res.json()
-                                                }).then((data) => {
-                                                        if(data.username){
-                                                                setUserEmail(data.username);
-                                                        }
-                                                        
-                                                })
-        },[])
+                const fetchData = async () => {
+                const response = await axios.get("http://localhost:3000/admin/me", {
+                        headers: {
+                                "Authorization": "Bearer " + localStorage.getItem("token"),
+                              },
+                });
+                let data = response.data;
+                if (data.username) {
+                        setUserEmail(data.username);
+                }
+                }
+                fetchData();
+              }, []);
 
         if(userEmail){
                 return <div style={{display:"flex",
@@ -32,7 +32,17 @@ function Appbar(){
                 </div>
                 
                 <div style={{display: "flex"}}>
-                        <div>{userEmail}</div>
+                        <Typography variant = "h6" paddingRight={2}>Welcome Back! {userEmail}</Typography>
+                        <div style={{marginRight: 10}}>
+                                <Button variant={'contained'} onClick={() => {
+                                        navigate("/addCourse");
+                                }}>Add Course</Button>
+                        </div>
+                        <div style={{marginRight: 10}}>
+                                <Button variant={'contained'} onClick={() => {
+                                        navigate("/courses");
+                                }}>Courses</Button>
+                        </div>
                         <div style={{marginRight: 10}}>
                                 <Button variant={'contained'} onClick={() => {
                                         localStorage.setItem("token", null)
@@ -60,7 +70,7 @@ function Appbar(){
                         <div>
                                 <Button variant={'contained'} onClick={() => {
                                         navigate("/login")
-                                }}>SignIn</Button>
+                                }}>LogIn</Button>
                         </div>
                 </div>
                 

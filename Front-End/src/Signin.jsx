@@ -2,33 +2,39 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Card from '@mui/material/Card';
 import { Typography } from '@mui/material';
+import { useState } from 'react';
+import axios from "axios";
 
 
 function Signin(){
+        const[email, setEmail] = useState()
+        const[password, setPAssword] = useState()
+
         return <div>
                 <div style={{paddingTop:150,marginBottom:10,display:"flex", justifyContent:"center"}}>
-                        <Typography variant={'h6'}>Welcome to CourseWorld! Please Sign-In Below</Typography> 
+                        <Typography variant={'h6'}>Welcome to CourseWorld! Please Log-In Below</Typography> 
                 </div>
                 <div style={{display:"flex", justifyContent:"center"}}>
                         <Card  style={{width:400, padding:20}}>
-                                <TextField fullWidth="true" id="outlined-basic" label="Email" variant="outlined" />
+                                <TextField onChange={(event) =>{
+                                        setEmail(event.target.value)
+                                }} fullWidth="true" id="outlined-basic" label="Email" variant="outlined" />
                                 <br /> <br />
-                                <TextField fullWidth="true" id="outlined-basic" label="Password" variant="outlined" type={"password"} />
+                                <TextField onChange={(event) =>{
+                                        setPAssword(event.target.value)
+                                }} fullWidth="true" id="outlined-basic" label="Password" variant="outlined" type={"password"} />
                                 <br /> <br />
-                                <Button onClick={() => {
-                                        fetch("http://localhost:3000/admin/signup",{
-                                        method: "POST",
-                                        body: JSON.stringify({
+                                <Button onClick={async () => {
+                                        const response = await axios.post("http://localhost:3000/admin/login", null, {
+                                        headers: {
                                                 "username" : email,
-                                                "password" : password
-                                        }),
-                                        headers:{
-                                                "Content-type": "application/json"
-                                        }}).then((res) => {
-                                                return res.json()
-                                        }).then((data) => {
-                                                localStorage.setItem("token", data.token);
+                                                "password" : password,
+                                                }
+
                                         })
+                                        let data = response.data;
+                                        localStorage.setItem("token", data.token);
+                                        window.location = "/"
                                 }}  variant="contained">Sign In</Button>
                         </Card>
                 </div>

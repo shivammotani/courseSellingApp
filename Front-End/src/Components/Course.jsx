@@ -1,36 +1,42 @@
 import { useParams } from "react-router-dom";
 import { useEffect,useState } from "react";
-import Card from '@mui/material/Card';
-import { Typography,TextField,Button,Grid } from '@mui/material';
-// import {Coursetorender} from './Courses';
-import {atom, useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
+import { Typography,TextField,Button,Grid, Card } from '@mui/material';
 import axios from "axios";
 import zIndex from "@mui/material/styles/zIndex";
+import { BASE_URL } from "../config.js";
+import {Loading} from "./Loading";
+import { courseState } from "../store/atoms/course";
+import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil";
+import { courseTitle, courseDescription, coursePrice, isCourseLoading, courseImage } from "../store/selectors/course";
 
 function Course(){
         let {selectedCourseId} = useParams();
-        console.log("Course main rendered")
-        const setCourse = useSetRecoilState(coursesState);
+        const setCourse = useSetRecoilState(courseState);
+        const courseLoading = useRecoilValue(isCourseLoading);
         useEffect(() => {
                 const fetchData = async () => {
-                const response = await axios.get("http://localhost:3000/admin/course/" + selectedCourseId, {
+                const response = await axios.get(`${BASE_URL}/admin/course/`+ selectedCourseId, {
                                 headers: {
                                         "Authorization": "Bearer " + localStorage.getItem("token")
                                       }
                 });
                 let data = response.data;
                 if (data.course) {
-                        setCourse(data.course)
+                        setCourse({isLoading: false, course: data.course});
                 }
                 }
                 fetchData();
               }, []);
+        
+              if (courseLoading) {
+                return <Loading />
+            }
 
         return <div>
                 <GrayTopper ></GrayTopper>
                 <Grid container>
                         <Grid item lg={8} md = {12} sm = {12}>
-                         <UpdateCourse courseId = {selectedCourseId}  />
+                         <UpdateCourse />
                         </Grid>
                         <Grid item lg={4} md = {12} sm = {12}>
                         <Coursetorender />
@@ -40,11 +46,11 @@ function Course(){
 }
 
 function GrayTopper(){
-        const courseObject = useRecoilValue(coursesState);
+        const title = useRecoilValue(courseTitle);
         return <div style={{height:250, background: "#212121", top:0, width: "100vw", zIndex:0, marginBottom:-150}}>
                 <div style={{height:250, display:"flex", justifyContent:"center", flexDirection: "column"}}>
                         <div>
-                                <Typography style={{color:"white", fontWeight:600}} variant="h3" textAlign={"center"}>{courseObject.title}</Typography>
+                                <Typography style={{color:"white", fontWeight:600}} variant="h3" textAlign={"center"}>{title}</Typography>
                         </div>
                 </div>
         </div>
@@ -53,8 +59,12 @@ function GrayTopper(){
 
 
 function Coursetorender(){
-        const courseObject = useRecoilValue(coursesState);
-        if(!courseObject){
+        const title = useRecoilValue(courseTitle);
+        const imageLink = useRecoilValue(courseImage);
+        const price = useRecoilValue(coursePrice);
+        const description = useRecoilValue(courseDescription);
+        
+        if(!title){
                 return <div>Loading...</div>
         }
         return <div style={{display: "flex", marginTop:50, justifyContent: "center", width: "100%"}}>
@@ -66,31 +76,30 @@ function Coursetorender(){
                         marginRight: 50,
                         paddingBottom: 15,
                         zIndex: 2
-                }}>
-                        <img src={courseObject.imageLink} style={{width:350, height:300}} alt="" />
-                        <Typography paddingLeft={1} variant = "h5">{courseObject.title}</Typography>
-                        <Typography paddingLeft={1} variant = "subtitle2">{courseObject.description}</Typography>
-                        <Typography paddingLeft={1}  variant = "subtitle1">Price: {courseObject.price}</Typography>
+                }}>    
+                        <img src={imageLink} style={{width:350, height:300}} alt="" />
+                        <Typography paddingLeft={1} variant = "h5">{title}</Typography>
+                        <Typography paddingLeft={1} variant = "subtitle2">{description}</Typography>
+                        <Typography paddingLeft={1} variant="subtitle2"> Price: Rs {price} </Typography>
                         
                 </Card>
         </div>
 }
 
-function UpdateCourse(props){
-        const [courseList, setCourse]  = useRecoilState(coursesState);
-        console.log(courseList)
-        const[title, setTitle] = useState('');
-        const[description, setDescription] = useState('');
-        const[price, setPrice] = useState('');
-        const[imageLink, setImage] = useState('');
+function UpdateCourse(){
+        const [courseDetails, setCourse] = useRecoilState(courseState);
+        const [title, setTitle] = useState(courseDetails.course.title);
+        const [description, setDescription] = useState(courseDetails.course.description);
+        const [image, setImage] = useState(courseDetails.course.imageLink);
+        const [price, setPrice] = useState(courseDetails.course.price);
 
         useEffect(() => {
                 // Update the local state when courseObject changes
-                setTitle(courseList.title);
-                setDescription(courseList.description);
-                setPrice(courseList.price);
-                setImage(courseList.imageLink);
-            }, [courseList]);
+                setTitle(courseDetails.course.title);
+                setDescription(courseDetails.course.description);
+                setPrice(courseDetails.course.price);
+                setImage(courseDetails.course.imageLink);
+            }, [courseDetails.course]);
 
 
         return <div style={{display:"flex", justifyContent:"center"}}>                           
@@ -103,14 +112,14 @@ function UpdateCourse(props){
                                 <br /> <br />
                                 <TextField value = {price} onChange={(event) => {setPrice(event.target.value)}} fullWidth="true" id="outlined-basic" label="Price" variant="outlined" />
                                 <br /> <br />
-                                <TextField value = {imageLink} onChange={(event) => {setImage(event.target.value)}} fullWidth="true" id="outlined-basic" label="Image Link" variant="outlined" />
+                                <TextField value = {image} onChange={(event) => {setImage(event.target.value)}} fullWidth="true" id="outlined-basic" label="Image Link" variant="outlined" />
                                 <br /> <br />
                                 <Button onClick= {async () => {
-                                        await axios.put("http://localhost:3000/admin/courses/" + props.courseId, {
+                                        await axios.put(`${BASE_URL}/admin/courses/` + courseDetails.course._id, {
                                                 title,
                                                 description,
                                                 price,
-                                                imageLink,
+                                                imageLink: image,
                                                 "published": true
                                         },{
                                                 headers: {
@@ -118,12 +127,13 @@ function UpdateCourse(props){
                                                       }
                                         })
                                         const updatedObject = {
+                                                _id: courseDetails.course._id,
                                                 title,
                                                 description,
                                                 price,
-                                                imageLink
+                                                imageLink:image
                                         }
-                                        setCourse(updatedObject)
+                                        setCourse({course: updatedObject, isLoading: false});
                                 }}  variant="contained">Update Course</Button>
                            </div>
                         
@@ -132,8 +142,3 @@ function UpdateCourse(props){
 }
 
 export default Course
-
-const coursesState = atom({
-        key: 'coursesState',
-        default: {}
-});

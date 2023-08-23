@@ -4,6 +4,7 @@ import Card from '@mui/material/Card';
 import { Typography } from '@mui/material';
 import { useState } from 'react';
 import axios from "axios";
+import { BASE_URL } from "../config.js"
 
 function AddCourse(){
         const[title, setTitle] = useState();
@@ -25,13 +26,16 @@ function AddCourse(){
                                 <TextField onChange={(event) => {setImage(event.target.value)}} fullWidth="true" id="outlined-basic" label="Image Link" variant="outlined" />
                                 <br /> <br />
                                 <Button onClick= {async () => {
-                                        await axios.post("http://localhost:3000/admin/courses", {
+                                        await axios.post(`${BASE_URL}/admin/courses`, {
                                                 title,
                                                 description,
                                                 price,
                                                 imageLink,
                                                 "published": true
-                                        })
+                                        },{
+                                                headers: {
+                                                    "Authorization": "Bearer " + localStorage.getItem("token")
+                                                }})
                                         alert("Course Added")
                                 }}  variant="contained">Add Course</Button>
                          </Card>

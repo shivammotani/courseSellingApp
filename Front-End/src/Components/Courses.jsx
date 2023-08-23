@@ -1,16 +1,15 @@
 import { useEffect,useState } from "react";
-import Card from '@mui/material/Card';
-import { Typography } from '@mui/material';
-import Button from '@mui/material/Button';
+import { Button, Card, Typography } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../config.js";
 
 function Courses(){
 
         const [courseList, setCourse] = useState([]);
         useEffect(() => {
                 const fetchData = async () => {
-                const response = await axios.get("http://localhost:3000/admin/courses", {
+                const response = await axios.get(`${BASE_URL}/admin/courses/`, {
                                 headers: {
                                         "Authorization": "Bearer " + localStorage.getItem("token")
                                       }
@@ -34,17 +33,18 @@ export function Coursetorender(props){
         const navigate = useNavigate()
         return <Card style = {{
                 margin:10,
-                width:300,
-                minHeight: 200
-        }}>
-                <Typography textAlign={"center"} variant = "h5">{props.course.title}</Typography>
-                <Typography textAlign={"center"} variant = "subtitle1">{props.course.description}</Typography>
-                <img src={props.course.imageLink} style={{width:250}} alt="" />
-                <Typography variant = "subtitle1">Price: {props.course.price}</Typography>
-                <div style ={{display: "flex", justifyContent: "center", marginTop:20}}>
-                        <Button variant="contained" size = "large" onClick ={() => {
-                                navigate("/course/" + props.course._id);
-                        }}>Edit</Button>
+                minWidth:300,
+                minHeight: 300
+        }}>     <div style ={{margin:20}}>
+                        <Typography textAlign={"center"} variant = "h5">{props.course.title}</Typography>
+                        <Typography textAlign={"center"} variant = "subtitle1">{props.course.description}</Typography>
+                        <img src={props.course.imageLink} style={{width:300, minHeight:300, maxHeight:300, padding:10}} alt="" />
+                        <Typography variant = "subtitle1">Price: {props.course.price}</Typography>
+                        <div style ={{display: "flex", justifyContent: "center"}}>
+                                <Button variant="contained" size = "large" onClick ={() => {
+                                        navigate("/course/" + props.course._id);
+                                }}>Edit</Button>
+                        </div>
                 </div>
                 
         </Card>
